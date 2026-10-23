@@ -1,0 +1,177 @@
+{
+  "propietarios": [
+    {
+      "id": 1792722396861,
+      "name": "Pedro Martínez",
+      "phone": "442 111 2233",
+      "email": "pedro.martinez@gmail.com",
+      "img": "https://img.icons8.com/color/1200/google-contacts.jpg",
+      "pets": 0
+    },
+    {
+      "id": 1792722598452,
+      "name": "Ana Gómez",
+      "phone": "442 987 6543",
+      "email": "ana.gomez@gmail.com",
+      "img": "https://img.icons8.com/color/1200/google-contacts.jpg",
+      "pets": 0
+    },
+    {
+      "id": 1792722635714,
+      "name": "José Ramírez",
+      "phone": " 442 345 6789",
+      "email": "jose.ramirez@gmail.com",
+      "img": "https://img.icons8.com/color/1200/google-contacts.jpg",
+      "pets": 0
+    },
+    {
+      "id": 1792722670924,
+      "name": "Lucía Fernández",
+      "phone": "442 555 1234",
+      "email": "lucia.fernandez@gmail.com",
+      "img": "https://img.icons8.com/color/1200/google-contacts.jpg",
+      "pets": 0
+    },
+    {
+      "id": 1792722710273,
+      "name": " Mariana López",
+      "phone": "442 123 4567",
+      "email": "mariana.lopez@gmail.com",
+      "img": "https://img.icons8.com/color/1200/google-contacts.jpg",
+      "pets": 0
+    }
+  ],
+  "mascotas": [],
+  "citas": [
+    {
+      "id": 1792713409587,
+      "fecha": "2026-10-24",
+      "hora": "10:30",
+      "mascota": "lucas",
+      "motivo": "Vacuanas ",
+      "estado": "Completada"
+    }
+  ],
+  "consultas": [
+    {
+      "id": 1792716842370,
+      "fecha": "2026-09-12",
+      "mascota": "Lucas",
+      "dueno": "Ana Lopez",
+      "motivo": "Revisión general",
+      "sintomas": "Disminución del apetito desde ayer.",
+      "diagnostico": "Paciente alerta, con leve disminución del apetito. Se recomienda valoración y seguimiento.",
+      "tratamiento": "Revisión veterinaria, vigilancia de alimentación y seguimiento según indicación del veterinario.",
+      "peso": "4.5",
+      "temperatura": "38.5",
+      "estado": "Pendiente"
+    },
+    {
+      "id": 1792717018630,
+      "fecha": "2026-10-19",
+      "mascota": "Lunes",
+      "dueno": "Mariana Lopez",
+      "motivo": "Revision General ",
+      "sintomas": "El propietario comenta que Lucas ha estado activo y se alimenta con normalidad. Acude a revisión preventiva para verificar su estado general y revisar su calendario de vacunación.",
+      "diagnostico": "e recomienda revisar la cartilla de vacunación y los antecedentes médicos antes de determinar si necesita alguna vacuna.",
+      "tratamiento": "se administra ......",
+      "peso": "4.5",
+      "temperatura": "38.5",
+      "estado": "Pendiente"
+    },
+    {
+      "id": 1792717811114,
+      "fecha": "2026-10-23",
+      "mascota": "lucas",
+      "dueno": "Ana Lopez",
+      "motivo": "La propietaria refiere haber observado la presencia de pulgas en el pelaje de su gato, por lo que acude a consulta para su revisión y tratamiento antiparasitario.",
+      "sintomas": "se rasca mucho ",
+      "diagnostico": "Posible infestación por pulgas (ectoparásitos). Se requiere revisión clínica para confirmar su presencia y evaluar el grado de infestación.",
+      "tratamiento": "Valoración veterinaria y aplicación de un antiparasitario específico para gatos, de acuerdo con su peso, edad y estado de salud. Se brindarán recomendaciones para el control de pulgas en el ambiente.",
+      "peso": "4.5",
+      "temperatura": "38.5",
+      "estado": "Pendiente"
+    },
+    {
+      "id": 1792718627806,
+      "fecha": "2026-10-22",
+      "mascota": "Max-Perro",
+      "dueno": " Carlos Pérez",
+      "motivo": " Vómito y diarrea.",
+      "sintomas": "El dueño reporta que Max vomitó 3 veces anoche y ha tenido diarrea líquida desde la madrugada. Se le ve decaído.",
+      "diagnostico": "Gastroenteritis aguda leve, probablemente por ingesta de comida en mal estado.",
+      "tratamiento": "Ayuno de 12 horas, luego dieta blanda (pollo y arroz) por 3 días.",
+      "medicamentos": "omeprazol 10mg - 1 cápsula cada 24 hrs por 3 días.\nProbióticos en pasta - 1 ml cada 12 hrs por 5 días\n\n",
+      "peso": "4.5",
+      "temperatura": "38.5",
+      "estado": "Pendiente",
+      "costo": "450"
+    }
+  ],
+  "servicios": [
+    {
+      "id": 1792713767342,
+      "nombre": "Consulta General ",
+      "desc": "revisión del estado general de la mascota.",
+      "precio": "250.00",
+      "img": "https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=300"
+    }
+  ],
+  "tienda": [
+    {
+      "id": 1792714782456,
+      "nombre": "Correa para perro",
+      "categoria": "Accesorios",
+      "precio": "180.00",
+      "stock": 5,
+      "img": "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+    }
+  ],
+  "pagos": [
+    {
+      "id": 1792714131756,
+      "folio": "#5522",
+      "concepto": "Consulta General  - lucas",
+      "monto": "250.00",
+      "estado": "Pagado",
+      "fecha": "22/10/2026",
+      "metodo": "Efectivo"
+    },
+    {
+      "id": 1792714361055,
+      "folio": "#3733",
+      "concepto": "Consulta General  - lucas",
+      "monto": "250.00",
+      "estado": "Pagado",
+      "fecha": "22/10/2026",
+      "metodo": "Efectivo"
+    },
+    {
+      "id": 1792714536192,
+      "folio": "#7853",
+      "concepto": "Consulta General  - lucas ",
+      "monto": "250.00",
+      "estado": "Pagado",
+      "fecha": "22/10/2026",
+      "metodo": "Efectivo"
+    },
+    {
+      "id": 1792714865297,
+      "folio": "#1035",
+      "concepto": "Venta: Correa para perro",
+      "monto": "180.00",
+      "estado": "Pagado",
+      "fecha": "22/10/2026",
+      "metodo": "Efectivo"
+    },
+    {
+      "id": 1792718627826,
+      "folio": "#C-5883",
+      "concepto": "Consulta: Max-Perro -  Vómito y diarrea.",
+      "monto": "$450.00",
+      "estado": "Pagado",
+      "fecha": "2026-10-22",
+      "metodo": "Efectivo"
+    }
+  ]
+}
