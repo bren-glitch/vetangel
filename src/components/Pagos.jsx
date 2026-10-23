@@ -66,44 +66,37 @@ const Pagos = () => {
         const textoBusqueda = busquedaReceta.toLowerCase();
         const consultasMascota = consultas.filter(c => {
             const textoConsulta = `${c.mascota} ${c.dueno}`.toLowerCase();
-            return textoConsulta.includes(textoBusqueda) && c.receta;
+            return textoConsulta.includes(textoBusqueda) && (c.receta || c.medicamentos);
         });
+        // Tomamos la última consulta que coincida
         setRecetaEncontrada(consultasMascota.length > 0 ? consultasMascota[consultasMascota.length - 1] : 'no-encontrada');
     };
 
-    // MAGIA: PASAR SOLO LO RECETADO Y LA CONSULTA AL CARRITO
+    // MAGIA: PASAR SOLO LA CONSULTA AL CARRITO
     const pasarRecetaAlCarrito = () => {
         if (!recetaEncontrada) return;
 
         const nuevosItems = [];
 
-        // 1. Agregar la consulta (con el costo que puso el doctor)
+        // 1. Agregar la consulta con su precio exacto
         if (recetaEncontrada.costo && parseFloat(recetaEncontrada.costo) > 0) {
             nuevosItems.push({
                 nombre: `Consulta Médica: ${recetaEncontrada.motivo}`,
                 precio: `$${parseFloat(recetaEncontrada.costo).toFixed(2)}`,
                 tipo: 'Servicio Médico'
             });
-        }
-
-        // 2. Buscar medicamentos recetados (coincidencia con la Tienda)
-        if (recetaEncontrada.receta) {
-            // Separamos por comas o la letra "y"
-            const palabrasReceta = recetaEncontrada.receta.toLowerCase().split(/[, y]+/);
-
-            productosTienda.forEach(prod => {
-                const nombreProd = prod.nombre.toLowerCase();
-                // Solo lo agrega si el nombre del producto está escrito en la receta
-                if (palabrasReceta.some(palabra => palabra.length > 2 && nombreProd.includes(palabra))) {
-                    nuevosItems.push({ ...prod, tipo: 'Medicamento Recetado' });
-                }
-            });
+        } else {
+            alert("Esta consulta no tiene un costo asignado. Por favor, edita la consulta y ponle un precio.");
+            return;
         }
 
         setCarrito(nuevosItems);
         setNombreClienteManual(recetaEncontrada.dueno || '');
         setModalReceta(false);
         setModalManual(true);
+
+        // Dejamos el buscador del carrito vacío para que busquen los medicamentos
+        setBusquedaProducto('');
     };
 
     // --- LÓGICA DEL CARRITO MANUAL ---
@@ -174,7 +167,7 @@ const Pagos = () => {
                         <FileText size={18} /> Surtir Receta
                     </button>
 
-                    <button className="btn-primary" onClick={() => setModalManual(true)}>
+                    <button className="btn-primary" onClick={() => { setCarrito([]); setModalManual(true); }}>
                         <ShoppingCart size={18} /> Cobro Libre
                     </button>
                 </div>
@@ -315,17 +308,17 @@ const Pagos = () => {
                                 <p style={{ fontSize: '0.85rem', color: 'var(--text-gray)', marginBottom: '15px' }}>Diagnóstico: {recetaEncontrada.diagnostico}</p>
 
                                 <p style={{ fontWeight: 'bold', marginBottom: '5px' }}>Medicamentos para surtir en casa:</p>
-                                <p style={{ backgroundColor: 'white', padding: '10px', borderRadius: '5px', border: '1px solid #bbdefb' }}>{recetaEncontrada.receta}</p>
+                                <p style={{ backgroundColor: 'white', padding: '10px', borderRadius: '5px', border: '1px solid #bbdefb' }}>{recetaEncontrada.receta || 'Ninguno'}</p>
 
                                 {recetaEncontrada.costo && (
                                     <p style={{ fontWeight: 'bold', marginTop: '15px' }}>Costo de consulta: <span style={{ color: 'var(--primary-green)' }}>${parseFloat(recetaEncontrada.costo).toFixed(2)}</span></p>
                                 )}
 
                                 <button onClick={pasarRecetaAlCarrito} className="btn-primary" style={{ width: '100%', marginTop: '20px', justifyContent: 'center' }}>
-                                    <ArrowRight size={18} /> Pasar todo al Cobro de Caja
+                                    <ArrowRight size={18} /> Pasar consulta al Cobro
                                 </button>
 
-                                <p style={{ fontSize: '0.8rem', color: 'var(--text-gray)', marginTop: '15px', fontStyle: 'italic' }}>* Esto agregará la consulta y los medicamentos encontrados en la tienda al carrito de cobro.</p>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--text-gray)', marginTop: '15px', fontStyle: 'italic' }}>* Esto pasará la consulta al carrito. Los medicamentos tendrás que agregarlos manualmente desde el buscador del carrito.</p>
                             </div>
                         )}
                     </div>
