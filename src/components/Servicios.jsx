@@ -86,11 +86,9 @@ const Servicios = () => {
     const eliminarServicio = (e, id) => {
         e.stopPropagation();
 
-        // Nos aseguramos de que el ID sea un número entero limpio
-        const idNumerico = Number(id);
-
         if (window.confirm("¿Eliminar este servicio?")) {
-            fetch(`/api/servicios/${idNumerico}`, { method: 'DELETE' })
+            // Usamos el ID directamente, sin convertirlo a número
+            fetch(`/api/servicios/${id}`, { method: 'DELETE' })
                 .then(res => {
                     if (!res.ok) throw new Error("Error en el servidor");
                     return res.json();
@@ -164,8 +162,8 @@ const Servicios = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{servicio.precio}</span>
                             <div style={{ display: 'flex', gap: '10px' }}>
-                                <Edit size={18} color="var(--primary-green)" onClick={(e) => abrirModalEditar(e, servicio)} />
-                                <Trash2 size={18} color="#d32f2f" onClick={(e) => eliminarServicio(e, servicio.id)} />
+                                <Edit size={18} color="var(--primary-green)" onClick={(e) => abrirModalEditar(e, servicio._id)} />
+                                <Trash2 size={18} color="#d32f2f" onClick={(e) => eliminarServicio(e, servicio._id)} />
                             </div>
                         </div>
                     </div>
