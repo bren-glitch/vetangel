@@ -14,8 +14,6 @@ const Pagos = () => {
     const [busquedaReceta, setBusquedaReceta] = useState('');
     const [recetaEncontrada, setRecetaEncontrada] = useState(null);
     const [consultas, setConsultas] = useState([]);
-    const [serviciosDisponibles, setServiciosDisponibles] = useState([]);
-    const [productosTienda, setProductosTienda] = useState([]);
 
     // COBRO MANUAL (CARRITO)
     const [modalManual, setModalManual] = useState(false);
@@ -23,6 +21,10 @@ const Pagos = () => {
     const [carrito, setCarrito] = useState([]);
     const [nombreClienteManual, setNombreClienteManual] = useState('');
     const [metodoPagoManual, setMetodoPagoManual] = useState('Efectivo');
+
+    // LISTAS DE LA TIENDA Y SERVICIOS
+    const [productosTienda, setProductosTienda] = useState([]);
+    const [serviciosDisponibles, setServiciosDisponibles] = useState([]);
 
     const cargarDatos = () => {
         fetch('/api/pagos').then(res => res.json()).then(data => setPagos(data));
@@ -69,40 +71,31 @@ const Pagos = () => {
         setRecetaEncontrada(consultasMascota.length > 0 ? consultasMascota[consultasMascota.length - 1] : 'no-encontrada');
     };
 
-    // MAGIA: PASAR TODA LA RECETA AL CARRITO
+    // MAGIA: PASAR SOLO LO RECETADO Y LA CONSULTA AL CARRITO
     const pasarRecetaAlCarrito = () => {
         if (!recetaEncontrada) return;
 
         const nuevosItems = [];
 
-        // 1. Agregar la consulta (como un servicio genérico si hay costo)
+        // 1. Agregar la consulta (con el costo que puso el doctor)
         if (recetaEncontrada.costo && parseFloat(recetaEncontrada.costo) > 0) {
             nuevosItems.push({
-                nombre: `Consulta: ${recetaEncontrada.motivo}`,
+                nombre: `Consulta Médica: ${recetaEncontrada.motivo}`,
                 precio: `$${parseFloat(recetaEncontrada.costo).toFixed(2)}`,
                 tipo: 'Servicio Médico'
             });
         }
 
-        // 2. Buscar medicamentos aplicados (si están en la tienda)
-        if (recetaEncontrada.medicamentos) {
-            nuevosItems.push({
-                nombre: `Aplicación: ${recetaEncontrada.medicamentos}`,
-                precio: `$0.00`, // Asumimos que ya se cobró en la consulta o se cobra aparte
-                tipo: 'Medicamento Aplicado'
-            });
-        }
-
-        // 3. Buscar medicamentos recetados (en la tienda)
+        // 2. Buscar medicamentos recetados (coincidencia con la Tienda)
         if (recetaEncontrada.receta) {
-            // Como es texto libre, buscamos coincidencias en la tienda
+            // Separamos por comas o la letra "y"
             const palabrasReceta = recetaEncontrada.receta.toLowerCase().split(/[, y]+/);
 
             productosTienda.forEach(prod => {
                 const nombreProd = prod.nombre.toLowerCase();
-                // Si alguna palabra de la receta está en el nombre del producto
+                // Solo lo agrega si el nombre del producto está escrito en la receta
                 if (palabrasReceta.some(palabra => palabra.length > 2 && nombreProd.includes(palabra))) {
-                    nuevosItems.push({ ...prod, tipo: 'Producto Recetado' });
+                    nuevosItems.push({ ...prod, tipo: 'Medicamento Recetado' });
                 }
             });
         }
@@ -113,7 +106,7 @@ const Pagos = () => {
         setModalManual(true);
     };
 
-    // --- LÓGICA DEL CARRITO ---
+    // --- LÓGICA DEL CARRITO MANUAL ---
     const agregarAlCarrito = (item) => {
         setCarrito([...carrito, item]);
     };
@@ -162,6 +155,7 @@ const Pagos = () => {
         return { backgroundColor: '#eeeeee', color: '#616161' };
     };
 
+    // RESULTADOS DEL BUSCADOR DEL CARRITO
     const resultadosBusqueda = [
         ...productosTienda.filter(p => p.nombre.toLowerCase().includes(busquedaProducto.toLowerCase())).map(p => ({ ...p, tipo: 'Producto' })),
         ...serviciosDisponibles.filter(s => s.nombre.toLowerCase().includes(busquedaProducto.toLowerCase())).map(s => ({ ...s, tipo: 'Servicio' }))
@@ -338,7 +332,7 @@ const Pagos = () => {
                 </div>
             )}
 
-            {/* MODAL DE COBRO DE CAJA (CARRITO) */}
+            {/* MODAL DE COBRO DE CAJA */}
             {modalManual && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
                     <div className="card" style={{ width: '750px', maxHeight: '90vh', overflowY: 'auto', padding: '25px', position: 'relative' }}>
