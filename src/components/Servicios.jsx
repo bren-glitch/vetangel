@@ -23,7 +23,8 @@ const Servicios = () => {
     const cargarServicios = () => {
         fetch('/api/servicios')
             .then(res => res.json())
-            .then(data => setServicios(data));
+            .then(data => setServicios(data))
+            .catch(err => console.error("Error al cargar:", err));
     };
 
     useEffect(() => { cargarServicios(); }, []);
@@ -81,11 +82,26 @@ const Servicios = () => {
         });
     };
 
+    // FUNCIÓN CORREGIDA PARA ELIMINAR
     const eliminarServicio = (e, id) => {
         e.stopPropagation();
+
+        // Nos aseguramos de que el ID sea un número entero limpio
+        const idNumerico = Number(id);
+
         if (window.confirm("¿Eliminar este servicio?")) {
-            fetch(`/api/servicios/${id}`, { method: 'DELETE' })
-                .then(() => cargarServicios());
+            fetch(`/api/servicios/${idNumerico}`, { method: 'DELETE' })
+                .then(res => {
+                    if (!res.ok) throw new Error("Error en el servidor");
+                    return res.json();
+                })
+                .then(() => {
+                    cargarServicios(); // Recarga la lista si se borró con éxito
+                })
+                .catch(err => {
+                    console.error("Error al eliminar:", err);
+                    alert("No se pudo eliminar. Revisa la consola.");
+                });
         }
     };
 
