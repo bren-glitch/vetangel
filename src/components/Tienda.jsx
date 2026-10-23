@@ -234,12 +234,20 @@ const Tienda = () => {
                 </div>
             )}
 
-            {/* MODAL COBRO */}
+            {/* MODAL COBRO CON PRECIO DESTACADO */}
             {modalCobro && productoSeleccionado && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
                     <div className="card" style={{ width: '400px', padding: '25px', position: 'relative' }}>
                         <button onClick={() => setModalCobro(false)} style={{ position: 'absolute', top: '15px', right: '15px', border: 'none', background: 'none', cursor: 'pointer' }}><X size={24} /></button>
-                        <h2 style={{ marginBottom: '20px', color: 'var(--primary-green)' }}>Cobrar: {productoSeleccionado.nombre}</h2>
+
+                        <h2 style={{ marginBottom: '15px', color: 'var(--primary-green)' }}>Cobrar: {productoSeleccionado.nombre}</h2>
+
+                        {/* AQUI MOSTRAMOS EL PRECIO EN GRANDE */}
+                        <div style={{ backgroundColor: 'var(--light-green)', padding: '10px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center' }}>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--text-gray)', marginBottom: '5px' }}>Total a pagar</p>
+                            <p style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--primary-green)' }}>{productoSeleccionado.precio}</p>
+                        </div>
+
                         <form onSubmit={procesarCobro} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <div>
                                 <label style={{ fontSize: '0.9rem', fontWeight: '500' }}>Nombre del cliente</label>
