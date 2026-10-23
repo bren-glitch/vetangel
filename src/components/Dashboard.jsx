@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CalendarPlus, UserPlus, ShoppingCart, DollarSign, PawPrint, Calendar, Stethoscope, ArrowRight } from 'lucide-react';
 
-// Recibimos setActiveTab para que los botones funcionen
 const Dashboard = ({ setActiveTab }) => {
     const [stats, setStats] = useState({
         mascotas: 0,
@@ -10,24 +9,36 @@ const Dashboard = ({ setActiveTab }) => {
         ingresosHoy: 0
     });
 
+    // Estado para el perfil dinámico
+    const [perfil, setPerfil] = useState({
+        nombre: 'Dra. Ana',
+        foto: 'https://i.pravatar.cc/40?img=5',
+        rol: 'Administradora'
+    });
+
     useEffect(() => {
-        // Traemos todos los datos para calcular las estadísticas reales
+        // 1. Cargar perfil desde LocalStorage
+        const config = localStorage.getItem('configVetAngel');
+        if (config) {
+            const parsed = JSON.parse(config);
+            setPerfil({
+                nombre: parsed.nombreUsuario || 'Usuario',
+                foto: parsed.fotoPerfilBase64 || parsed.fotoPerfilUrl || 'https://i.pravatar.cc/40?img=5',
+                rol: parsed.rol || 'Administrador'
+            });
+        }
+
+        // 2. Cargar estadísticas reales
         Promise.all([
             fetch('http://localhost:3000/api/mascotas').then(res => res.json()),
             fetch('http://localhost:3000/api/citas').then(res => res.json()),
             fetch('http://localhost:3000/api/consultas').then(res => res.json()),
             fetch('http://localhost:3000/api/pagos').then(res => res.json())
         ]).then(([mascotas, citas, consultas, pagos]) => {
+            const hoy = new Date().toISOString().split('T')[0];
 
-            const hoy = new Date().toISOString().split('T')[0]; // Fecha de hoy en formato YYYY-MM-DD
-
-            // Contamos citas de hoy (comparando la fecha)
             const citasDeHoy = citas.filter(c => c.fecha === hoy).length;
-
-            // Contamos consultas de hoy
             const consultasDeHoy = consultas.filter(c => c.fecha === hoy).length;
-
-            // Sumamos los ingresos de hoy (solo los que están Pagados)
             const ingresosDeHoy = pagos
                 .filter(p => p.fecha === hoy && p.estado === 'Pagado')
                 .reduce((sum, p) => {
@@ -46,17 +57,17 @@ const Dashboard = ({ setActiveTab }) => {
 
     return (
         <div>
-            {/* Header */}
+            {/* Header Dinámico */}
             <div className="header">
                 <div>
-                    <h1>Bienvenido/a, Dra. Ana</h1>
+                    <h1>Bienvenido/a, {perfil.nombre}</h1>
                     <p className="subtitle">Hoy es un gran día para hacer la diferencia 💚</p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <img src="https://i.pravatar.cc/40?img=5" alt="User" style={{ borderRadius: '50%' }} />
+                    <img src={perfil.foto} alt="User" style={{ borderRadius: '50%', width: '40px', height: '40px', objectFit: 'cover' }} />
                     <div style={{ fontSize: '0.9rem' }}>
-                        <strong>Dra. Ana Martínez</strong>
-                        <p style={{ color: 'var(--text-gray)', fontSize: '0.75rem' }}>Administradora</p>
+                        <strong>{perfil.nombre}</strong>
+                        <p style={{ color: 'var(--text-gray)', fontSize: '0.75rem' }}>{perfil.rol}</p>
                     </div>
                 </div>
             </div>
@@ -87,7 +98,7 @@ const Dashboard = ({ setActiveTab }) => {
                 />
             </div>
 
-            {/* Tarjetas de Resumen (AHORA SON DINÁMICAS) */}
+            {/* Tarjetas de Resumen */}
             <div className="grid-4" style={{ marginBottom: '30px' }}>
                 <div className="card">
                     <p style={{ color: 'var(--text-gray)', fontSize: '0.9rem' }}>Mascotas registradas</p>
@@ -119,7 +130,7 @@ const Dashboard = ({ setActiveTab }) => {
                 </div>
             </div>
 
-            {/* Accesos Rápidos (AHORA SÍ NAVEGAN) */}
+            {/* Accesos Rápidos */}
             <h3 style={{ marginBottom: '15px', fontSize: '1.2rem' }}>Accesos rápidos</h3>
             <div className="grid-4">
                 {[
@@ -132,7 +143,7 @@ const Dashboard = ({ setActiveTab }) => {
                         key={idx}
                         className="card"
                         style={{ display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', padding: '15px 20px', transition: 'transform 0.2s' }}
-                        onClick={() => setActiveTab(item.tab)} // <-- AQUÍ ESTÁ LA MAGIA
+                        onClick={() => setActiveTab(item.tab)}
                         onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
                         onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                     >
