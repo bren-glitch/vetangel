@@ -5,7 +5,7 @@ const Reportes = () => {
     const [pagos, setPagos] = useState([]);
 
     useEffect(() => {
-        fetch('http://localhost:3000/api/pagos')
+        fetch('/api/pagos')
             .then(res => res.json())
             .then(data => setPagos(data));
     }, []);

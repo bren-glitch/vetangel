@@ -30,10 +30,10 @@ const Dashboard = ({ setActiveTab }) => {
 
         // 2. Cargar estadísticas reales
         Promise.all([
-            fetch('http://localhost:3000/api/mascotas').then(res => res.json()),
-            fetch('http://localhost:3000/api/citas').then(res => res.json()),
-            fetch('http://localhost:3000/api/consultas').then(res => res.json()),
-            fetch('http://localhost:3000/api/pagos').then(res => res.json())
+            fetch('/api/mascotas').then(res => res.json()),
+            fetch('/api/citas').then(res => res.json()),
+            fetch('/api/consultas').then(res => res.json()),
+            fetch('/api/pagos').then(res => res.json())
         ]).then(([mascotas, citas, consultas, pagos]) => {
             const hoy = new Date().toISOString().split('T')[0];
 

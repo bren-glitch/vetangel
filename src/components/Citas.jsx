@@ -14,11 +14,11 @@ const Citas = () => {
     const [estado, setEstado] = useState('Pendiente');
 
     const cargarDatos = () => {
-        fetch('http://localhost:3000/api/citas')
+        fetch('/api/citas')
             .then(res => res.json())
             .then(data => setCitas(data));
 
-        fetch('http://localhost:3000/api/consultas')
+        fetch('/api/consultas')
             .then(res => res.json())
             .then(data => {
                 const pendientes = data.filter(c => c.estado === 'Pendiente' && c.costo);
@@ -30,7 +30,7 @@ const Citas = () => {
 
     const guardarCita = (e) => {
         e.preventDefault();
-        fetch('http://localhost:3000/api/citas', {
+        fetch('/api/citas', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ fecha, hora, mascota, motivo, estado })
@@ -43,7 +43,7 @@ const Citas = () => {
 
     // FUNCIÓN PARA CAMBIAR EL ESTADO (Completada o Cancelada)
     const cambiarEstadoCita = (id, nuevoEstado) => {
-        fetch(`http://localhost:3000/api/citas/${id}`, {
+        fetch(`/api/citas/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ estado: nuevoEstado })
@@ -55,7 +55,7 @@ const Citas = () => {
 
     const eliminarCita = (id) => {
         if (window.confirm("¿Eliminar cita permanentemente?")) {
-            fetch(`http://localhost:3000/api/citas/${id}`, { method: 'DELETE' }).then(() => cargarDatos());
+            fetch(`/api/citas/${id}`, { method: 'DELETE' }).then(() => cargarDatos());
         }
     };
 

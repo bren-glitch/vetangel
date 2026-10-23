@@ -21,7 +21,7 @@ const Servicios = () => {
     const [mascota, setMascota] = useState('');
 
     const cargarServicios = () => {
-        fetch('http://localhost:3000/api/servicios')
+        fetch('/api/servicios')
             .then(res => res.json())
             .then(data => setServicios(data));
     };
@@ -67,8 +67,8 @@ const Servicios = () => {
         const datos = { nombre, desc, precio, img: imagenFinal };
 
         const url = editandoId
-            ? `http://localhost:3000/api/servicios/${editandoId}`
-            : 'http://localhost:3000/api/servicios';
+            ? `/api/servicios/${editandoId}`
+            : '/api/servicios';
         const metodo = editandoId ? 'PUT' : 'POST';
 
         fetch(url, {
@@ -84,7 +84,7 @@ const Servicios = () => {
     const eliminarServicio = (e, id) => {
         e.stopPropagation();
         if (window.confirm("¿Eliminar este servicio?")) {
-            fetch(`http://localhost:3000/api/servicios/${id}`, { method: 'DELETE' })
+            fetch(`/api/servicios/${id}`, { method: 'DELETE' })
                 .then(() => cargarServicios());
         }
     };
@@ -115,7 +115,7 @@ const Servicios = () => {
             metodo: metodoPago
         };
 
-        fetch('http://localhost:3000/api/pagos', {
+        fetch('/api/pagos', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(nuevoPago)

@@ -26,7 +26,7 @@ const Consultas = ({ pacientePrevio }) => {
     const [costo, setCosto] = useState('');
 
     const cargarConsultas = () => {
-        fetch('http://localhost:3000/api/consultas')
+        fetch('/api/consultas')
             .then(res => res.json())
             .then(data => setConsultas(data));
     };
@@ -69,8 +69,8 @@ const Consultas = ({ pacientePrevio }) => {
         const datosConsulta = { fecha, mascota, dueno, motivo, sintomas, diagnostico, tratamiento, medicamentos, peso, temperatura, estado, costo };
 
         const url = editandoId
-            ? `http://localhost:3000/api/consultas/${editandoId}`
-            : 'http://localhost:3000/api/consultas';
+            ? `/api/consultas/${editandoId}`
+            : '/api/consultas';
 
         const metodo = editandoId ? 'PUT' : 'POST';
 
@@ -92,7 +92,7 @@ const Consultas = ({ pacientePrevio }) => {
                     metodo: 'Efectivo'
                 };
 
-                fetch('http://localhost:3000/api/pagos', {
+                fetch('/api/pagos', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(nuevoPago)
@@ -107,7 +107,7 @@ const Consultas = ({ pacientePrevio }) => {
     const eliminarConsulta = (id) => {
         if (window.confirm("¿Eliminar este registro del expediente?")) {
             const idNumerico = parseInt(id);
-            fetch(`http://localhost:3000/api/consultas/${idNumerico}`, { method: 'DELETE' })
+            fetch(`/api/consultas/${idNumerico}`, { method: 'DELETE' })
                 .then(() => cargarConsultas());
         }
     };

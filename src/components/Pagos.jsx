@@ -24,9 +24,9 @@ const Pagos = () => {
     const [metodoPagoManual, setMetodoPagoManual] = useState('Efectivo');
 
     const cargarDatos = () => {
-        fetch('http://localhost:3000/api/pagos').then(res => res.json()).then(data => setPagos(data));
-        fetch('http://localhost:3000/api/consultas').then(res => res.json()).then(data => setConsultas(data));
-        fetch('http://localhost:3000/api/tienda').then(res => res.json()).then(data => setProductosTienda(data));
+        fetch('/api/pagos').then(res => res.json()).then(data => setPagos(data));
+        fetch('/api/consultas').then(res => res.json()).then(data => setConsultas(data));
+        fetch('/api/tienda').then(res => res.json()).then(data => setProductosTienda(data));
     };
 
     useEffect(() => { cargarDatos(); }, []);
@@ -37,7 +37,7 @@ const Pagos = () => {
     );
 
     const cambiarEstado = (id, nuevoEstado) => {
-        fetch(`http://localhost:3000/api/pagos/${id}`, {
+        fetch(`/api/pagos/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ estado: nuevoEstado })
@@ -46,7 +46,7 @@ const Pagos = () => {
 
     const eliminarPago = (id) => {
         if (window.confirm("¿Eliminar este recibo?")) {
-            fetch(`http://localhost:3000/api/pagos/${id}`, { method: 'DELETE' })
+            fetch(`/api/pagos/${id}`, { method: 'DELETE' })
                 .then(() => { cargarDatos(); setMenuAbiertoId(null); });
         }
     };
@@ -96,7 +96,7 @@ const Pagos = () => {
             metodo: metodoPagoManual
         };
 
-        fetch('http://localhost:3000/api/pagos', {
+        fetch('/api/pagos', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(nuevoPago)

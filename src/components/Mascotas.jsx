@@ -25,11 +25,11 @@ const Mascotas = () => {
     const [fotoBase64, setFotoBase64] = useState('');
 
     const cargarDatos = () => {
-        fetch('http://localhost:3000/api/mascotas')
+        fetch('/api/mascotas')
             .then(res => res.json())
             .then(data => { setMascotas(data); setCargando(false); });
 
-        fetch('http://localhost:3000/api/consultas')
+        fetch('/api/consultas')
             .then(res => res.json())
             .then(data => setConsultas(data));
     };
@@ -100,8 +100,8 @@ const Mascotas = () => {
         };
 
         const url = editandoId
-            ? `http://localhost:3000/api/mascotas/${editandoId}`
-            : 'http://localhost:3000/api/mascotas';
+            ? `/api/mascotas/${editandoId}`
+            : '/api/mascotas';
 
         const metodo = editandoId ? 'PUT' : 'POST';
 
@@ -118,7 +118,7 @@ const Mascotas = () => {
     const eliminarMascota = (e, id) => {
         e.stopPropagation();
         if (window.confirm("¿Estás seguro de eliminar a esta mascota?")) {
-            fetch(`http://localhost:3000/api/mascotas/${id}`, { method: 'DELETE' })
+            fetch(`/api/mascotas/${id}`, { method: 'DELETE' })
                 .then(() => { cargarDatos(); setMenuAbiertoId(null); });
         }
     };

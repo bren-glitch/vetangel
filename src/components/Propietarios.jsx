@@ -18,7 +18,7 @@ const Propietarios = () => {
 
     // Cargar datos
     const cargarPropietarios = () => {
-        fetch('http://localhost:3000/api/propietarios')
+        fetch('/api/propietarios')
             .then(res => res.json())
             .then(data => { setPropietarios(data); setCargando(false); })
             .catch(error => console.error("Error:", error));
@@ -54,8 +54,8 @@ const Propietarios = () => {
         };
 
         const url = editandoId
-            ? `http://localhost:3000/api/propietarios/${editandoId}`
-            : 'http://localhost:3000/api/propietarios';
+            ? `/api/propietarios/${editandoId}`
+            : '/api/propietarios';
 
         const metodo = editandoId ? 'PUT' : 'POST';
 
@@ -74,7 +74,7 @@ const Propietarios = () => {
     // Eliminar
     const eliminarPropietario = (id) => {
         if (window.confirm("¿Estás seguro de eliminar a este propietario?")) {
-            fetch(`http://localhost:3000/api/propietarios/${id}`, { method: 'DELETE' })
+            fetch(`/api/propietarios/${id}`, { method: 'DELETE' })
                 .then(() => {
                     cargarPropietarios();
                     setMenuAbiertoId(null);

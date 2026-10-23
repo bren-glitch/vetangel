@@ -27,7 +27,7 @@ const Tienda = () => {
     const [montoRecibido, setMontoRecibido] = useState('');
 
     const cargarProductos = () => {
-        fetch('http://localhost:3000/api/tienda')
+        fetch('/api/tienda')
             .then(res => res.json())
             .then(data => setProductos(data));
     };
@@ -96,8 +96,8 @@ const Tienda = () => {
         };
 
         const url = editandoId
-            ? `http://localhost:3000/api/tienda/${editandoId}`
-            : 'http://localhost:3000/api/tienda';
+            ? `/api/tienda/${editandoId}`
+            : '/api/tienda';
 
         const metodo = editandoId ? 'PUT' : 'POST';
 
@@ -114,7 +114,7 @@ const Tienda = () => {
     const eliminarProducto = (e, id) => {
         e.stopPropagation();
         if (window.confirm("¿Eliminar este producto?")) {
-            fetch(`http://localhost:3000/api/tienda/${id}`, { method: 'DELETE' })
+            fetch(`/api/tienda/${id}`, { method: 'DELETE' })
                 .then(() => cargarProductos());
         }
     };
@@ -149,14 +149,14 @@ const Tienda = () => {
             metodo: metodoPago
         };
 
-        fetch('http://localhost:3000/api/pagos', {
+        fetch('/api/pagos', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(nuevoPago)
         });
 
         const nuevoStock = productoSeleccionado.stock - 1;
-        fetch(`http://localhost:3000/api/tienda/${productoSeleccionado.id}`, {
+        fetch(`/api/tienda/${productoSeleccionado.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...productoSeleccionado, stock: nuevoStock })
