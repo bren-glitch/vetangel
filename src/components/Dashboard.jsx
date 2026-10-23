@@ -28,19 +28,26 @@ const Dashboard = ({ setActiveTab }) => {
             });
         }
 
-        // 2. Cargar estadísticas reales
+        // 2. Cargar estadísticas reales (Arreglo de fechas)
         Promise.all([
             fetch('/api/mascotas').then(res => res.json()),
             fetch('/api/citas').then(res => res.json()),
             fetch('/api/consultas').then(res => res.json()),
             fetch('/api/pagos').then(res => res.json())
         ]).then(([mascotas, citas, consultas, pagos]) => {
-            const hoy = new Date().toISOString().split('T')[0];
+            const hoy = new Date();
 
-            const citasDeHoy = citas.filter(c => c.fecha === hoy).length;
-            const consultasDeHoy = consultas.filter(c => c.fecha === hoy).length;
+            // Creamos los dos formatos de fecha posibles para comparar
+            const hoyGuiones = hoy.toISOString().split('T')[0]; // 2026-10-23
+            const hoyDiagonales = hoy.toLocaleDateString(); // 23/10/2026
+
+            // Filtramos citas y consultas (aceptando ambos formatos)
+            const citasDeHoy = citas.filter(c => c.fecha === hoyGuiones || c.fecha === hoyDiagonales).length;
+            const consultasDeHoy = consultas.filter(c => c.fecha === hoyGuiones || c.fecha === hoyDiagonales).length;
+
+            // Calculamos los ingresos (aceptando ambos formatos y solo estado Pagado)
             const ingresosDeHoy = pagos
-                .filter(p => p.fecha === hoy && p.estado === 'Pagado')
+                .filter(p => (p.fecha === hoyGuiones || p.fecha === hoyDiagonales) && p.estado === 'Pagado')
                 .reduce((sum, p) => {
                     const monto = parseFloat(p.monto.replace('$', '')) || 0;
                     return sum + monto;
