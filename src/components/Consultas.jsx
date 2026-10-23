@@ -60,11 +60,11 @@ const Consultas = ({ pacientePrevio }) => {
     };
 
     const abrirModalEditar = (consulta) => {
-        setEditandoId(consulta._id); // <-- Usamos _id
+        setEditandoId(consulta._id);
         setFecha(consulta.fecha); setMascota(consulta.mascota); setDueno(consulta.dueno);
         setMotivo(consulta.motivo); setSintomas(consulta.sintomas); setDiagnostico(consulta.diagnostico);
         setTratamiento(consulta.tratamiento); setMedicamentos(consulta.medicamentos);
-        setReceta(consulta.receta || ''); // <-- Cargamos la receta
+        setReceta(consulta.receta || '');
         setPeso(consulta.peso); setTemperatura(consulta.temperatura); setEstado(consulta.estado); setCosto(consulta.costo);
         setModalFormulario(true);
         setMenuAbiertoId(null);
@@ -74,15 +74,10 @@ const Consultas = ({ pacientePrevio }) => {
         e.preventDefault();
         const datosConsulta = {
             fecha, mascota, dueno, motivo, sintomas, diagnostico, tratamiento,
-            medicamentos, // Aplicados
-            receta,       // Recetados
-            peso, temperatura, estado, costo
+            medicamentos, receta, peso, temperatura, estado, costo
         };
 
-        const url = editandoId
-            ? `/api/consultas/${editandoId}`
-            : '/api/consultas';
-
+        const url = editandoId ? `/api/consultas/${editandoId}` : '/api/consultas';
         const metodo = editandoId ? 'PUT' : 'POST';
 
         fetch(url, {
@@ -90,13 +85,12 @@ const Consultas = ({ pacientePrevio }) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(datosConsulta)
         }).then(() => {
-
             // Si es nueva y tiene costo, genera el recibo en pagos
             if (!editandoId && costo && parseFloat(costo) > 0) {
                 const nuevoPago = {
                     folio: `#C-${Math.floor(Math.random() * 10000)}`,
                     concepto: `Consulta: ${mascota} - ${motivo}`,
-                    medicamentos: receta, // <-- Mandamos la receta al recibo
+                    medicamentos: receta,
                     monto: `$${parseFloat(costo).toFixed(2)}`,
                     estado: estado,
                     fecha: fecha,
@@ -126,6 +120,18 @@ const Consultas = ({ pacientePrevio }) => {
         setConsultaSeleccionada(consulta);
         setModalExpediente(true);
         setMenuAbiertoId(null);
+    };
+
+    // FUNCIÓN NUEVA: Cambiar estado desde el expediente
+    const cambiarEstadoExpediente = (id, nuevoEstado) => {
+        fetch(`/api/consultas/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estado: nuevoEstado })
+        }).then(() => {
+            cargarConsultas();
+            setConsultaSeleccionada(prev => ({ ...prev, estado: nuevoEstado }));
+        });
     };
 
     const historialMascota = consultas.filter(c =>
@@ -275,16 +281,14 @@ const Consultas = ({ pacientePrevio }) => {
                                 <textarea rows="2" value={tratamiento} onChange={(e) => setTratamiento(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', marginTop: '5px', fontFamily: 'inherit' }} />
                             </div>
 
-                            {/* MEDICAMENTOS APLICADOS EN CONSULTA */}
                             <div style={{ backgroundColor: 'var(--light-green)', padding: '15px', borderRadius: '8px' }}>
                                 <label style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary-green)' }}>💉 Medicamentos aplicados en consulta</label>
-                                <textarea rows="2" value={medicamentos} onChange={(e) => setMedicamentos(e.target.value)} placeholder="Ej. Vacuna Antirrábica, Meloxicam (inyectable)..." style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', marginTop: '5px', fontFamily: 'inherit' }} />
+                                <textarea rows="2" value={medicamentos} onChange={(e) => setMedicamentos(e.target.value)} placeholder="Ej. Vacuna Antirrábica..." style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', marginTop: '5px', fontFamily: 'inherit' }} />
                             </div>
 
-                            {/* MEDICAMENTOS RECETADOS PARA CASA */}
                             <div style={{ backgroundColor: '#e3f2fd', padding: '15px', borderRadius: '8px', borderLeft: '4px solid #1976d2' }}>
                                 <label style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#1976d2' }}>💊 Medicamentos recetados (para surtir)</label>
-                                <textarea rows="2" value={receta} onChange={(e) => setReceta(e.target.value)} placeholder="Ej. Amoxicilina 250mg, Pipeta Antipulgas..." style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', marginTop: '5px', fontFamily: 'inherit' }} />
+                                <textarea rows="2" value={receta} onChange={(e) => setReceta(e.target.value)} placeholder="Ej. Amoxicilina..." style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', marginTop: '5px', fontFamily: 'inherit' }} />
                             </div>
 
                             <div style={{ display: 'flex', gap: '15px' }}>
@@ -348,9 +352,21 @@ const Consultas = ({ pacientePrevio }) => {
                                     </p>
 
                                     <p style={{ fontSize: '0.85rem', color: 'var(--text-gray)' }}>Estado de Pago</p>
-                                    <span style={{ padding: '3px 10px', borderRadius: '15px', fontSize: '0.8rem', fontWeight: 'bold', ...getEstadoStyle(consultaSeleccionada.estado || 'Pendiente') }}>
-                                        {consultaSeleccionada.estado || 'Pendiente'}
-                                    </span>
+                                    {/* BOTÓN PARA MARCAR COMO PAGADO */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <span style={{ padding: '3px 10px', borderRadius: '15px', fontSize: '0.8rem', fontWeight: 'bold', ...getEstadoStyle(consultaSeleccionada.estado || 'Pendiente') }}>
+                                            {consultaSeleccionada.estado || 'Pendiente'}
+                                        </span>
+
+                                        {consultaSeleccionada.estado === 'Pendiente' && (
+                                            <button
+                                                onClick={() => cambiarEstadoExpediente(consultaSeleccionada._id, 'Pagado')}
+                                                style={{ border: 'none', backgroundColor: 'var(--primary-green)', color: 'white', padding: '4px 8px', borderRadius: '5px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold' }}
+                                            >
+                                                Cobrar / Pagar
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -364,13 +380,11 @@ const Consultas = ({ pacientePrevio }) => {
                                 <p style={{ fontSize: '0.95rem' }}>{consultaSeleccionada.tratamiento || 'Sin indicaciones adicionales'}</p>
                             </div>
 
-                            {/* MOSTRAR MEDICAMENTOS APLICADOS */}
                             <div style={{ backgroundColor: 'var(--light-green)', padding: '15px', borderRadius: '8px', marginBottom: '15px' }}>
                                 <p style={{ fontSize: '0.85rem', color: 'var(--primary-green)', marginBottom: '5px', fontWeight: 'bold' }}>💉 Aplicados en consulta</p>
                                 <p style={{ fontSize: '0.95rem' }}>{consultaSeleccionada.medicamentos || 'Ninguno.'}</p>
                             </div>
 
-                            {/* MOSTRAR RECETA PARA CASA */}
                             <div style={{ backgroundColor: '#e3f2fd', padding: '15px', borderRadius: '8px', marginBottom: '30px', borderLeft: '4px solid #1976d2' }}>
                                 <p style={{ fontSize: '0.85rem', color: '#1976d2', marginBottom: '5px', fontWeight: 'bold' }}>💊 Recetados (para surtir)</p>
                                 <p style={{ fontSize: '0.95rem' }}>{consultaSeleccionada.receta || 'Ninguno.'}</p>
