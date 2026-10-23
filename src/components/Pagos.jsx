@@ -72,22 +72,19 @@ const Pagos = () => {
         setRecetaEncontrada(consultasMascota.length > 0 ? consultasMascota[consultasMascota.length - 1] : 'no-encontrada');
     };
 
-    // MAGIA: PASAR SOLO LA CONSULTA AL CARRITO
+    // MAGIA: PASAR CONSULTA AL CARRITO (Aunque no tenga costo)
     const pasarRecetaAlCarrito = () => {
         if (!recetaEncontrada) return;
 
         const nuevosItems = [];
 
-        // 1. Agregar la consulta con su precio exacto
+        // Si el doctor puso un costo, lo agregamos. Si no, el carrito se abre vacío.
         if (recetaEncontrada.costo && parseFloat(recetaEncontrada.costo) > 0) {
             nuevosItems.push({
                 nombre: `Consulta Médica: ${recetaEncontrada.motivo}`,
                 precio: `$${parseFloat(recetaEncontrada.costo).toFixed(2)}`,
                 tipo: 'Servicio Médico'
             });
-        } else {
-            alert("Esta consulta no tiene un costo asignado. Por favor, edita la consulta y ponle un precio.");
-            return;
         }
 
         setCarrito(nuevosItems);
@@ -95,7 +92,7 @@ const Pagos = () => {
         setModalReceta(false);
         setModalManual(true);
 
-        // Dejamos el buscador del carrito vacío para que busquen los medicamentos
+        // Dejamos el buscador listo para que la recepcionista agregue lo que falta
         setBusquedaProducto('');
     };
 
