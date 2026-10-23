@@ -19,7 +19,11 @@ const Consultas = ({ pacientePrevio }) => {
     const [sintomas, setSintomas] = useState('');
     const [diagnostico, setDiagnostico] = useState('');
     const [tratamiento, setTratamiento] = useState('');
-    const [medicamentos, setMedicamentos] = useState('');
+
+    // LOS DOS CAMPOS DE MEDICAMENTOS
+    const [medicamentos, setMedicamentos] = useState(''); // Aplicados
+    const [receta, setReceta] = useState(''); // Recetados
+
     const [peso, setPeso] = useState('');
     const [temperatura, setTemperatura] = useState('');
     const [estado, setEstado] = useState('Pendiente');
@@ -50,15 +54,17 @@ const Consultas = ({ pacientePrevio }) => {
     const abrirModalCrear = () => {
         setEditandoId(null);
         setFecha(''); setMascota(''); setDueno(''); setMotivo(''); setSintomas('');
-        setDiagnostico(''); setTratamiento(''); setMedicamentos(''); setPeso(''); setTemperatura(''); setEstado('Pendiente'); setCosto('');
+        setDiagnostico(''); setTratamiento(''); setMedicamentos(''); setReceta('');
+        setPeso(''); setTemperatura(''); setEstado('Pendiente'); setCosto('');
         setModalFormulario(true);
     };
 
     const abrirModalEditar = (consulta) => {
-        setEditandoId(consulta.id);
+        setEditandoId(consulta._id); // <-- Usamos _id
         setFecha(consulta.fecha); setMascota(consulta.mascota); setDueno(consulta.dueno);
         setMotivo(consulta.motivo); setSintomas(consulta.sintomas); setDiagnostico(consulta.diagnostico);
         setTratamiento(consulta.tratamiento); setMedicamentos(consulta.medicamentos);
+        setReceta(consulta.receta || ''); // <-- Cargamos la receta
         setPeso(consulta.peso); setTemperatura(consulta.temperatura); setEstado(consulta.estado); setCosto(consulta.costo);
         setModalFormulario(true);
         setMenuAbiertoId(null);
@@ -66,7 +72,12 @@ const Consultas = ({ pacientePrevio }) => {
 
     const guardarConsulta = (e) => {
         e.preventDefault();
-        const datosConsulta = { fecha, mascota, dueno, motivo, sintomas, diagnostico, tratamiento, medicamentos, peso, temperatura, estado, costo };
+        const datosConsulta = {
+            fecha, mascota, dueno, motivo, sintomas, diagnostico, tratamiento,
+            medicamentos, // Aplicados
+            receta,       // Recetados
+            peso, temperatura, estado, costo
+        };
 
         const url = editandoId
             ? `/api/consultas/${editandoId}`
@@ -85,7 +96,7 @@ const Consultas = ({ pacientePrevio }) => {
                 const nuevoPago = {
                     folio: `#C-${Math.floor(Math.random() * 10000)}`,
                     concepto: `Consulta: ${mascota} - ${motivo}`,
-                    medicamentos: medicamentos,
+                    medicamentos: receta, // <-- Mandamos la receta al recibo
                     monto: `$${parseFloat(costo).toFixed(2)}`,
                     estado: estado,
                     fecha: fecha,
@@ -106,8 +117,7 @@ const Consultas = ({ pacientePrevio }) => {
 
     const eliminarConsulta = (id) => {
         if (window.confirm("¿Eliminar este registro del expediente?")) {
-            const idNumerico = parseInt(id);
-            fetch(`/api/consultas/${idNumerico}`, { method: 'DELETE' })
+            fetch(`/api/consultas/${id}`, { method: 'DELETE' })
                 .then(() => cargarConsultas());
         }
     };
@@ -121,7 +131,7 @@ const Consultas = ({ pacientePrevio }) => {
     const historialMascota = consultas.filter(c =>
         c.mascota.toLowerCase() === consultaSeleccionada?.mascota.toLowerCase() &&
         c.dueno.toLowerCase() === consultaSeleccionada?.dueno.toLowerCase() &&
-        c.id !== consultaSeleccionada?.id
+        c._id !== consultaSeleccionada?._id
     );
 
     const getEstadoStyle = (estado) => {
@@ -164,7 +174,7 @@ const Consultas = ({ pacientePrevio }) => {
                     </thead>
                     <tbody>
                         {consultasFiltradas.map((consulta) => (
-                            <tr key={consulta.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <tr key={consulta._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                                 <td style={{ padding: '15px', fontWeight: '500' }}>{consulta.fecha}</td>
                                 <td style={{ padding: '15px' }}>
                                     <div style={{ fontWeight: '600', color: 'var(--primary-green)' }}>{consulta.mascota}</div>
@@ -187,18 +197,15 @@ const Consultas = ({ pacientePrevio }) => {
                                 </td>
                                 <td style={{ padding: '15px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-
                                         <Edit size={18} color="var(--text-gray)" style={{ cursor: 'pointer' }} onClick={() => abrirModalEditar(consulta)} title="Editar Consulta" />
-
                                         <button onClick={() => abrirExpediente(consulta)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--primary-green)' }} title="Ver Expediente">
                                             <Eye size={18} />
                                         </button>
-
                                         <div style={{ position: 'relative' }}>
-                                            <MoreVertical size={18} color="var(--text-gray)" style={{ cursor: 'pointer' }} onClick={() => setMenuAbiertoId(menuAbiertoId === consulta.id ? null : consulta.id)} />
-                                            {menuAbiertoId === consulta.id && (
+                                            <MoreVertical size={18} color="var(--text-gray)" style={{ cursor: 'pointer' }} onClick={() => setMenuAbiertoId(menuAbiertoId === consulta._id ? null : consulta._id)} />
+                                            {menuAbiertoId === consulta._id && (
                                                 <div style={{ position: 'absolute', right: '0px', top: '25px', backgroundColor: 'white', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', borderRadius: '8px', padding: '5px', zIndex: 100, width: '120px' }}>
-                                                    <button onClick={() => eliminarConsulta(consulta.id)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', border: 'none', background: 'none', cursor: 'pointer', color: '#d32f2f', width: '100%', textAlign: 'left', borderRadius: '5px' }}>
+                                                    <button onClick={() => eliminarConsulta(consulta._id)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', border: 'none', background: 'none', cursor: 'pointer', color: '#d32f2f', width: '100%', textAlign: 'left', borderRadius: '5px' }}>
                                                         <Trash2 size={16} /> Eliminar
                                                     </button>
                                                 </div>
@@ -212,6 +219,7 @@ const Consultas = ({ pacientePrevio }) => {
                 </table>
             </div>
 
+            {/* MODAL DE FORMULARIO */}
             {modalFormulario && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
                     <div className="card" style={{ width: '600px', maxHeight: '90vh', overflowY: 'auto', padding: '25px', position: 'relative' }}>
@@ -267,9 +275,16 @@ const Consultas = ({ pacientePrevio }) => {
                                 <textarea rows="2" value={tratamiento} onChange={(e) => setTratamiento(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', marginTop: '5px', fontFamily: 'inherit' }} />
                             </div>
 
+                            {/* MEDICAMENTOS APLICADOS EN CONSULTA */}
                             <div style={{ backgroundColor: 'var(--light-green)', padding: '15px', borderRadius: '8px' }}>
-                                <label style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary-green)' }}>💊 Medicamentos / Vacunas aplicadas</label>
-                                <textarea rows="2" value={medicamentos} onChange={(e) => setMedicamentos(e.target.value)} placeholder="Ej. Amoxicilina 250mg..." style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', marginTop: '5px', fontFamily: 'inherit' }} />
+                                <label style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary-green)' }}>💉 Medicamentos aplicados en consulta</label>
+                                <textarea rows="2" value={medicamentos} onChange={(e) => setMedicamentos(e.target.value)} placeholder="Ej. Vacuna Antirrábica, Meloxicam (inyectable)..." style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', marginTop: '5px', fontFamily: 'inherit' }} />
+                            </div>
+
+                            {/* MEDICAMENTOS RECETADOS PARA CASA */}
+                            <div style={{ backgroundColor: '#e3f2fd', padding: '15px', borderRadius: '8px', borderLeft: '4px solid #1976d2' }}>
+                                <label style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#1976d2' }}>💊 Medicamentos recetados (para surtir)</label>
+                                <textarea rows="2" value={receta} onChange={(e) => setReceta(e.target.value)} placeholder="Ej. Amoxicilina 250mg, Pipeta Antipulgas..." style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', marginTop: '5px', fontFamily: 'inherit' }} />
                             </div>
 
                             <div style={{ display: 'flex', gap: '15px' }}>
@@ -294,6 +309,7 @@ const Consultas = ({ pacientePrevio }) => {
                 </div>
             )}
 
+            {/* MODAL DE EXPEDIENTE */}
             {modalExpediente && consultaSeleccionada && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
                     <div className="card" style={{ width: '700px', maxHeight: '90vh', overflowY: 'auto', padding: '0', position: 'relative' }}>
@@ -348,9 +364,16 @@ const Consultas = ({ pacientePrevio }) => {
                                 <p style={{ fontSize: '0.95rem' }}>{consultaSeleccionada.tratamiento || 'Sin indicaciones adicionales'}</p>
                             </div>
 
+                            {/* MOSTRAR MEDICAMENTOS APLICADOS */}
+                            <div style={{ backgroundColor: 'var(--light-green)', padding: '15px', borderRadius: '8px', marginBottom: '15px' }}>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--primary-green)', marginBottom: '5px', fontWeight: 'bold' }}>💉 Aplicados en consulta</p>
+                                <p style={{ fontSize: '0.95rem' }}>{consultaSeleccionada.medicamentos || 'Ninguno.'}</p>
+                            </div>
+
+                            {/* MOSTRAR RECETA PARA CASA */}
                             <div style={{ backgroundColor: '#e3f2fd', padding: '15px', borderRadius: '8px', marginBottom: '30px', borderLeft: '4px solid #1976d2' }}>
-                                <p style={{ fontSize: '0.85rem', color: '#1976d2', marginBottom: '5px', fontWeight: 'bold' }}>💊 Medicamentos / Vacunas</p>
-                                <p style={{ fontSize: '0.95rem' }}>{consultaSeleccionada.medicamentos || 'No se recetaron medicamentos.'}</p>
+                                <p style={{ fontSize: '0.85rem', color: '#1976d2', marginBottom: '5px', fontWeight: 'bold' }}>💊 Recetados (para surtir)</p>
+                                <p style={{ fontSize: '0.95rem' }}>{consultaSeleccionada.receta || 'Ninguno.'}</p>
                             </div>
 
                             <h3 style={{ color: 'var(--text-gray)', marginBottom: '15px', borderBottom: '1px solid var(--border-color)', paddingBottom: '5px' }}>Historial de {consultaSeleccionada.mascota}</h3>
@@ -360,7 +383,7 @@ const Consultas = ({ pacientePrevio }) => {
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                     {historialMascota.map((hist) => (
-                                        <div key={hist.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 15px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                                        <div key={hist._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 15px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
                                             <div>
                                                 <p style={{ fontWeight: '500', fontSize: '0.9rem' }}>{hist.fecha} - {hist.motivo}</p>
                                                 <p style={{ fontSize: '0.8rem', color: 'var(--text-gray)' }}>Diagnóstico: {hist.diagnostico}</p>

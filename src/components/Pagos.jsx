@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MoreVertical, Trash2, Eye, X, CheckCircle, FileText, Plus, ShoppingCart, Stethoscope } from 'lucide-react';
+import { Search, MoreVertical, Trash2, Eye, X, CheckCircle, FileText, ShoppingCart } from 'lucide-react';
 
 const Pagos = () => {
     const [pagos, setPagos] = useState([]);
@@ -18,7 +18,7 @@ const Pagos = () => {
     // COBRO MANUAL (CARRITO)
     const [modalManual, setModalManual] = useState(false);
     const [productosTienda, setProductosTienda] = useState([]);
-    const [serviciosDisponibles, setServiciosDisponibles] = useState([]); // <-- NUEVO
+    const [serviciosDisponibles, setServiciosDisponibles] = useState([]);
     const [busquedaProducto, setBusquedaProducto] = useState('');
     const [carrito, setCarrito] = useState([]);
     const [nombreClienteManual, setNombreClienteManual] = useState('');
@@ -28,7 +28,7 @@ const Pagos = () => {
         fetch('/api/pagos').then(res => res.json()).then(data => setPagos(data));
         fetch('/api/consultas').then(res => res.json()).then(data => setConsultas(data));
         fetch('/api/tienda').then(res => res.json()).then(data => setProductosTienda(data));
-        fetch('/api/servicios').then(res => res.json()).then(data => setServiciosDisponibles(data)); // <-- Cargamos servicios
+        fetch('/api/servicios').then(res => res.json()).then(data => setServiciosDisponibles(data));
     };
 
     useEffect(() => { cargarDatos(); }, []);
@@ -59,9 +59,16 @@ const Pagos = () => {
         setMenuAbiertoId(null);
     };
 
+    // BUSCAR RECETA POR MASCOTA Y DUEÑO (en el campo 'receta')
     const buscarReceta = (e) => {
         e.preventDefault();
-        const consultasMascota = consultas.filter(c => c.mascota.toLowerCase() === busquedaReceta.toLowerCase() && c.medicamentos);
+        const textoBusqueda = busquedaReceta.toLowerCase();
+
+        const consultasMascota = consultas.filter(c => {
+            const textoConsulta = `${c.mascota} ${c.dueno}`.toLowerCase();
+            return textoConsulta.includes(textoBusqueda) && c.receta;
+        });
+
         setRecetaEncontrada(consultasMascota.length > 0 ? consultasMascota[consultasMascota.length - 1] : 'no-encontrada');
     };
 
@@ -114,7 +121,6 @@ const Pagos = () => {
         return { backgroundColor: '#eeeeee', color: '#616161' };
     };
 
-    // Filtramos productos y servicios por la búsqueda
     const resultadosBusqueda = [
         ...productosTienda.filter(p => p.nombre.toLowerCase().includes(busquedaProducto.toLowerCase())).map(p => ({ ...p, tipo: 'Producto' })),
         ...serviciosDisponibles.filter(s => s.nombre.toLowerCase().includes(busquedaProducto.toLowerCase())).map(s => ({ ...s, tipo: 'Servicio' }))
@@ -133,6 +139,7 @@ const Pagos = () => {
                         <FileText size={18} /> Surtir Receta
                     </button>
 
+                    {/* EL BOTÓN QUE ABRE EL CARRITO SIN CERRAR LA RECETA */}
                     <button className="btn-primary" onClick={() => setModalManual(true)}>
                         <ShoppingCart size={18} /> Cobro de Caja
                     </button>
@@ -247,7 +254,7 @@ const Pagos = () => {
                 </div>
             )}
 
-            {/* MODAL DE SURTIR RECETA */}
+            {/* MODAL DE SURTIR RECETA (NO SE CIERRA AL ABRIR EL CARRITO) */}
             {modalReceta && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
                     <div className="card" style={{ width: '450px', padding: '25px', position: 'relative' }}>
@@ -256,17 +263,26 @@ const Pagos = () => {
                         </button>
                         <h2 style={{ marginBottom: '20px', color: 'var(--primary-green)' }}>Surtir Receta</h2>
                         <form onSubmit={buscarReceta} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-                            <input type="text" placeholder="Nombre de la mascota..." value={busquedaReceta} onChange={(e) => setBusquedaReceta(e.target.value)} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }} required />
+                            <input
+                                type="text"
+                                placeholder="Mascota o dueño..."
+                                value={busquedaReceta}
+                                onChange={(e) => setBusquedaReceta(e.target.value)}
+                                style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                                required
+                            />
                             <button type="submit" className="btn-primary">Buscar</button>
                         </form>
-                        {recetaEncontrada === 'no-encontrada' && <p style={{ color: '#d32f2f', textAlign: 'center' }}>No se encontraron recetas para esta mascota.</p>}
+                        {recetaEncontrada === 'no-encontrada' && <p style={{ color: '#d32f2f', textAlign: 'center' }}>No se encontraron recetas para esta búsqueda.</p>}
                         {recetaEncontrada && recetaEncontrada !== 'no-encontrada' && (
                             <div style={{ backgroundColor: '#e3f2fd', padding: '20px', borderRadius: '8px' }}>
                                 <h3 style={{ color: '#1976d2', marginBottom: '10px' }}>Receta de {recetaEncontrada.mascota}</h3>
                                 <p style={{ fontSize: '0.85rem', color: 'var(--text-gray)', marginBottom: '5px' }}>Fecha: {recetaEncontrada.fecha}</p>
                                 <p style={{ fontSize: '0.85rem', color: 'var(--text-gray)', marginBottom: '15px' }}>Diagnóstico: {recetaEncontrada.diagnostico}</p>
-                                <p style={{ fontWeight: 'bold', marginBottom: '5px' }}>Medicamentos indicados:</p>
-                                <p style={{ backgroundColor: 'white', padding: '10px', borderRadius: '5px', border: '1px solid #bbdefb' }}>{recetaEncontrada.medicamentos}</p>
+
+                                <p style={{ fontWeight: 'bold', marginBottom: '5px' }}>Medicamentos para surtir en casa:</p>
+                                <p style={{ backgroundColor: 'white', padding: '10px', borderRadius: '5px', border: '1px solid #bbdefb' }}>{recetaEncontrada.receta}</p>
+
                                 <p style={{ fontSize: '0.8rem', color: 'var(--text-gray)', marginTop: '15px', fontStyle: 'italic' }}>* Revisa el inventario en la Tienda para surtir estos medicamentos.</p>
                             </div>
                         )}
@@ -274,9 +290,10 @@ const Pagos = () => {
                 </div>
             )}
 
-            {/* MODAL DE COBRO DE CAJA (EL CARRITO MEJORADO) */}
+            {/* MODAL DE COBRO DE CAJA */}
             {modalManual && (
-                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
+                    {/* zIndex 2000 para que aparezca encima del modal de receta */}
                     <div className="card" style={{ width: '750px', maxHeight: '90vh', overflowY: 'auto', padding: '25px', position: 'relative' }}>
                         <button onClick={() => setModalManual(false)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', cursor: 'pointer' }}>
                             <X size={24} color="var(--text-gray)" />
@@ -288,7 +305,6 @@ const Pagos = () => {
 
                         <div style={{ display: 'flex', gap: '20px' }}>
 
-                            {/* Lado Izquierdo: Buscador */}
                             <div style={{ flex: 1, borderRight: '1px solid var(--border-color)', paddingRight: '20px' }}>
                                 <h3 style={{ fontSize: '1rem', marginBottom: '10px' }}>1. Agregar Artículos / Servicios</h3>
                                 <div className="search-bar" style={{ width: '100%', marginBottom: '15px' }}>
@@ -302,7 +318,7 @@ const Pagos = () => {
                                             <div>
                                                 <p style={{ fontSize: '0.9rem', fontWeight: '500' }}>{item.nombre}</p>
                                                 <p style={{ fontSize: '0.8rem', color: 'var(--primary-green)', fontWeight: 'bold' }}>{item.precio}</p>
-                                                <span style={{ fontSize: '0.7rem', color: 'var(--text-gray)' }}>{item.tipo}</span> {/* Indica si es Producto o Servicio */}
+                                                <span style={{ fontSize: '0.7rem', color: 'var(--text-gray)' }}>{item.tipo}</span>
                                             </div>
                                             <button type="button" onClick={() => agregarAlCarrito(item)} style={{ border: 'none', backgroundColor: 'var(--light-green)', color: 'var(--primary-green)', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
                                                 + Agregar
@@ -313,7 +329,6 @@ const Pagos = () => {
                                 </div>
                             </div>
 
-                            {/* Lado Derecho: El Carrito */}
                             <div style={{ flex: 1 }}>
                                 <h3 style={{ fontSize: '1rem', marginBottom: '10px' }}>2. Resumen de Cobro</h3>
 
