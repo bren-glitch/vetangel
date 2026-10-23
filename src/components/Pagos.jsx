@@ -68,17 +68,16 @@ const Pagos = () => {
             const textoConsulta = `${c.mascota} ${c.dueno}`.toLowerCase();
             return textoConsulta.includes(textoBusqueda) && (c.receta || c.medicamentos);
         });
-        // Tomamos la última consulta que coincida
         setRecetaEncontrada(consultasMascota.length > 0 ? consultasMascota[consultasMascota.length - 1] : 'no-encontrada');
     };
 
-    // MAGIA: PASAR CONSULTA AL CARRITO (Aunque no tenga costo)
+    // MAGIA: PASAR CONSULTA Y RECETA AL CARRITO
     const pasarRecetaAlCarrito = () => {
         if (!recetaEncontrada) return;
 
         const nuevosItems = [];
 
-        // Si el doctor puso un costo, lo agregamos. Si no, el carrito se abre vacío.
+        // 1. Si el doctor puso un costo en la consulta, lo pasamos
         if (recetaEncontrada.costo && parseFloat(recetaEncontrada.costo) > 0) {
             nuevosItems.push({
                 nombre: `Consulta Médica: ${recetaEncontrada.motivo}`,
@@ -92,8 +91,12 @@ const Pagos = () => {
         setModalReceta(false);
         setModalManual(true);
 
-        // Dejamos el buscador listo para que la recepcionista agregue lo que falta
-        setBusquedaProducto('');
+        // 2. Pre-llenamos el buscador con lo recetado para que aparezcan los productos exactos
+        if (recetaEncontrada.receta) {
+            setBusquedaProducto(recetaEncontrada.receta);
+        } else if (recetaEncontrada.medicamentos) {
+            setBusquedaProducto(recetaEncontrada.medicamentos);
+        }
     };
 
     // --- LÓGICA DEL CARRITO MANUAL ---
@@ -314,8 +317,6 @@ const Pagos = () => {
                                 <button onClick={pasarRecetaAlCarrito} className="btn-primary" style={{ width: '100%', marginTop: '20px', justifyContent: 'center' }}>
                                     <ArrowRight size={18} /> Pasar consulta al Cobro
                                 </button>
-
-                                <p style={{ fontSize: '0.8rem', color: 'var(--text-gray)', marginTop: '15px', fontStyle: 'italic' }}>* Esto pasará la consulta al carrito. Los medicamentos tendrás que agregarlos manualmente desde el buscador del carrito.</p>
                             </div>
                         )}
                     </div>
@@ -333,6 +334,15 @@ const Pagos = () => {
                         <h2 style={{ marginBottom: '20px', color: 'var(--primary-green)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <ShoppingCart size={24} /> Cobro en Caja
                         </h2>
+
+                        {/* NUEVO: RECORDATORIO DE LA RECETA */}
+                        {recetaEncontrada && (
+                            <div style={{ backgroundColor: '#e3f2fd', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
+                                <p style={{ fontWeight: 'bold', color: '#1976d2', marginBottom: '5px' }}>Receta de {recetaEncontrada.mascota}:</p>
+                                <p style={{ fontSize: '0.9rem', marginBottom: '5px' }}><strong>Aplicados:</strong> {recetaEncontrada.medicamentos || 'Ninguno'}</p>
+                                <p style={{ fontSize: '0.9rem' }}><strong>Recetados:</strong> {recetaEncontrada.receta || 'Ninguno'}</p>
+                            </div>
+                        )}
 
                         <div style={{ display: 'flex', gap: '20px' }}>
 
