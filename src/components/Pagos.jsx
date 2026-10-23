@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MoreVertical, Trash2, Eye, X, CheckCircle, FileText, ShoppingCart } from 'lucide-react';
+import { Search, MoreVertical, Trash2, Eye, X, CheckCircle, FileText, ShoppingCart, ArrowRight } from 'lucide-react';
 
 const Pagos = () => {
     const [pagos, setPagos] = useState([]);
@@ -14,11 +14,11 @@ const Pagos = () => {
     const [busquedaReceta, setBusquedaReceta] = useState('');
     const [recetaEncontrada, setRecetaEncontrada] = useState(null);
     const [consultas, setConsultas] = useState([]);
+    const [serviciosDisponibles, setServiciosDisponibles] = useState([]);
+    const [productosTienda, setProductosTienda] = useState([]);
 
     // COBRO MANUAL (CARRITO)
     const [modalManual, setModalManual] = useState(false);
-    const [productosTienda, setProductosTienda] = useState([]);
-    const [serviciosDisponibles, setServiciosDisponibles] = useState([]);
     const [busquedaProducto, setBusquedaProducto] = useState('');
     const [carrito, setCarrito] = useState([]);
     const [nombreClienteManual, setNombreClienteManual] = useState('');
@@ -59,17 +59,58 @@ const Pagos = () => {
         setMenuAbiertoId(null);
     };
 
-    // BUSCAR RECETA POR MASCOTA Y DUEÑO (en el campo 'receta')
     const buscarReceta = (e) => {
         e.preventDefault();
         const textoBusqueda = busquedaReceta.toLowerCase();
-
         const consultasMascota = consultas.filter(c => {
             const textoConsulta = `${c.mascota} ${c.dueno}`.toLowerCase();
             return textoConsulta.includes(textoBusqueda) && c.receta;
         });
-
         setRecetaEncontrada(consultasMascota.length > 0 ? consultasMascota[consultasMascota.length - 1] : 'no-encontrada');
+    };
+
+    // MAGIA: PASAR TODA LA RECETA AL CARRITO
+    const pasarRecetaAlCarrito = () => {
+        if (!recetaEncontrada) return;
+
+        const nuevosItems = [];
+
+        // 1. Agregar la consulta (como un servicio genérico si hay costo)
+        if (recetaEncontrada.costo && parseFloat(recetaEncontrada.costo) > 0) {
+            nuevosItems.push({
+                nombre: `Consulta: ${recetaEncontrada.motivo}`,
+                precio: `$${parseFloat(recetaEncontrada.costo).toFixed(2)}`,
+                tipo: 'Servicio Médico'
+            });
+        }
+
+        // 2. Buscar medicamentos aplicados (si están en la tienda)
+        if (recetaEncontrada.medicamentos) {
+            nuevosItems.push({
+                nombre: `Aplicación: ${recetaEncontrada.medicamentos}`,
+                precio: `$0.00`, // Asumimos que ya se cobró en la consulta o se cobra aparte
+                tipo: 'Medicamento Aplicado'
+            });
+        }
+
+        // 3. Buscar medicamentos recetados (en la tienda)
+        if (recetaEncontrada.receta) {
+            // Como es texto libre, buscamos coincidencias en la tienda
+            const palabrasReceta = recetaEncontrada.receta.toLowerCase().split(/[, y]+/);
+
+            productosTienda.forEach(prod => {
+                const nombreProd = prod.nombre.toLowerCase();
+                // Si alguna palabra de la receta está en el nombre del producto
+                if (palabrasReceta.some(palabra => palabra.length > 2 && nombreProd.includes(palabra))) {
+                    nuevosItems.push({ ...prod, tipo: 'Producto Recetado' });
+                }
+            });
+        }
+
+        setCarrito(nuevosItems);
+        setNombreClienteManual(recetaEncontrada.dueno || '');
+        setModalReceta(false);
+        setModalManual(true);
     };
 
     // --- LÓGICA DEL CARRITO ---
@@ -139,9 +180,8 @@ const Pagos = () => {
                         <FileText size={18} /> Surtir Receta
                     </button>
 
-                    {/* EL BOTÓN QUE ABRE EL CARRITO SIN CERRAR LA RECETA */}
                     <button className="btn-primary" onClick={() => setModalManual(true)}>
-                        <ShoppingCart size={18} /> Cobro de Caja
+                        <ShoppingCart size={18} /> Cobro Libre
                     </button>
                 </div>
             </div>
@@ -254,7 +294,7 @@ const Pagos = () => {
                 </div>
             )}
 
-            {/* MODAL DE SURTIR RECETA (NO SE CIERRA AL ABRIR EL CARRITO) */}
+            {/* MODAL DE SURTIR RECETA */}
             {modalReceta && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
                     <div className="card" style={{ width: '450px', padding: '25px', position: 'relative' }}>
@@ -283,17 +323,24 @@ const Pagos = () => {
                                 <p style={{ fontWeight: 'bold', marginBottom: '5px' }}>Medicamentos para surtir en casa:</p>
                                 <p style={{ backgroundColor: 'white', padding: '10px', borderRadius: '5px', border: '1px solid #bbdefb' }}>{recetaEncontrada.receta}</p>
 
-                                <p style={{ fontSize: '0.8rem', color: 'var(--text-gray)', marginTop: '15px', fontStyle: 'italic' }}>* Revisa el inventario en la Tienda para surtir estos medicamentos.</p>
+                                {recetaEncontrada.costo && (
+                                    <p style={{ fontWeight: 'bold', marginTop: '15px' }}>Costo de consulta: <span style={{ color: 'var(--primary-green)' }}>${parseFloat(recetaEncontrada.costo).toFixed(2)}</span></p>
+                                )}
+
+                                <button onClick={pasarRecetaAlCarrito} className="btn-primary" style={{ width: '100%', marginTop: '20px', justifyContent: 'center' }}>
+                                    <ArrowRight size={18} /> Pasar todo al Cobro de Caja
+                                </button>
+
+                                <p style={{ fontSize: '0.8rem', color: 'var(--text-gray)', marginTop: '15px', fontStyle: 'italic' }}>* Esto agregará la consulta y los medicamentos encontrados en la tienda al carrito de cobro.</p>
                             </div>
                         )}
                     </div>
                 </div>
             )}
 
-            {/* MODAL DE COBRO DE CAJA */}
+            {/* MODAL DE COBRO DE CAJA (CARRITO) */}
             {modalManual && (
-                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
-                    {/* zIndex 2000 para que aparezca encima del modal de receta */}
+                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
                     <div className="card" style={{ width: '750px', maxHeight: '90vh', overflowY: 'auto', padding: '25px', position: 'relative' }}>
                         <button onClick={() => setModalManual(false)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', cursor: 'pointer' }}>
                             <X size={24} color="var(--text-gray)" />
