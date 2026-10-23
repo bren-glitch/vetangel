@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MoreVertical, Trash2, Eye, X, CheckCircle, FileText, Plus, ShoppingCart } from 'lucide-react';
+import { Search, MoreVertical, Trash2, Eye, X, CheckCircle, FileText, Plus, ShoppingCart, Stethoscope } from 'lucide-react';
 
 const Pagos = () => {
     const [pagos, setPagos] = useState([]);
@@ -9,17 +9,18 @@ const Pagos = () => {
     const [modalRecibo, setModalRecibo] = useState(false);
     const [pagoSeleccionado, setPagoSeleccionado] = useState(null);
 
-    // ESTADOS PARA SURTIR RECETA
+    // SURTIR RECETA
     const [modalReceta, setModalReceta] = useState(false);
     const [busquedaReceta, setBusquedaReceta] = useState('');
     const [recetaEncontrada, setRecetaEncontrada] = useState(null);
     const [consultas, setConsultas] = useState([]);
 
-    // ESTADOS PARA EL CARRITO DE COBRO MANUAL
+    // COBRO MANUAL (CARRITO)
     const [modalManual, setModalManual] = useState(false);
     const [productosTienda, setProductosTienda] = useState([]);
+    const [serviciosDisponibles, setServiciosDisponibles] = useState([]); // <-- NUEVO
     const [busquedaProducto, setBusquedaProducto] = useState('');
-    const [carrito, setCarrito] = useState([]); // Aquí se guardan los artículos a cobrar
+    const [carrito, setCarrito] = useState([]);
     const [nombreClienteManual, setNombreClienteManual] = useState('');
     const [metodoPagoManual, setMetodoPagoManual] = useState('Efectivo');
 
@@ -27,6 +28,7 @@ const Pagos = () => {
         fetch('/api/pagos').then(res => res.json()).then(data => setPagos(data));
         fetch('/api/consultas').then(res => res.json()).then(data => setConsultas(data));
         fetch('/api/tienda').then(res => res.json()).then(data => setProductosTienda(data));
+        fetch('/api/servicios').then(res => res.json()).then(data => setServiciosDisponibles(data)); // <-- Cargamos servicios
     };
 
     useEffect(() => { cargarDatos(); }, []);
@@ -63,9 +65,9 @@ const Pagos = () => {
         setRecetaEncontrada(consultasMascota.length > 0 ? consultasMascota[consultasMascota.length - 1] : 'no-encontrada');
     };
 
-    // --- LÓGICA DEL CARRITO MANUAL ---
-    const agregarAlCarrito = (producto) => {
-        setCarrito([...carrito, producto]);
+    // --- LÓGICA DEL CARRITO ---
+    const agregarAlCarrito = (item) => {
+        setCarrito([...carrito, item]);
     };
 
     const quitarDelCarrito = (index) => {
@@ -81,9 +83,8 @@ const Pagos = () => {
 
     const guardarCobroManual = (e) => {
         e.preventDefault();
-        if (carrito.length === 0) return alert("Agrega al menos un producto al cobro.");
+        if (carrito.length === 0) return alert("Agrega al menos un artículo o servicio al cobro.");
 
-        // Unimos los nombres de los productos en un solo concepto
         const conceptos = carrito.map(item => item.nombre).join(' + ');
 
         const nuevoPago = {
@@ -113,9 +114,11 @@ const Pagos = () => {
         return { backgroundColor: '#eeeeee', color: '#616161' };
     };
 
-    const productosFiltrados = productosTienda.filter(p =>
-        p.nombre.toLowerCase().includes(busquedaProducto.toLowerCase())
-    );
+    // Filtramos productos y servicios por la búsqueda
+    const resultadosBusqueda = [
+        ...productosTienda.filter(p => p.nombre.toLowerCase().includes(busquedaProducto.toLowerCase())).map(p => ({ ...p, tipo: 'Producto' })),
+        ...serviciosDisponibles.filter(s => s.nombre.toLowerCase().includes(busquedaProducto.toLowerCase())).map(s => ({ ...s, tipo: 'Servicio' }))
+    ];
 
     return (
         <div>
@@ -158,7 +161,7 @@ const Pagos = () => {
                     </thead>
                     <tbody>
                         {pagosFiltrados.map((pago) => (
-                            <tr key={pago.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <tr key={pago._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                                 <td style={{ padding: '15px', fontWeight: '500' }}>{pago.folio}</td>
                                 <td style={{ padding: '15px' }}>{pago.concepto}</td>
                                 <td style={{ padding: '15px', fontWeight: 'bold' }}>{pago.monto}</td>
@@ -174,15 +177,15 @@ const Pagos = () => {
                                             <Eye size={16} /> Ver
                                         </button>
                                         {pago.estado === 'Pendiente' && (
-                                            <button onClick={() => cambiarEstado(pago.id, 'Pagado')} style={{ border: 'none', backgroundColor: 'var(--primary-green)', color: 'white', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                            <button onClick={() => cambiarEstado(pago._id, 'Pagado')} style={{ border: 'none', backgroundColor: 'var(--primary-green)', color: 'white', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>
                                                 Cobrar
                                             </button>
                                         )}
                                         <div style={{ position: 'relative' }}>
-                                            <MoreVertical size={18} color="var(--text-gray)" style={{ cursor: 'pointer' }} onClick={() => setMenuAbiertoId(menuAbiertoId === pago.id ? null : pago.id)} />
-                                            {menuAbiertoId === pago.id && (
+                                            <MoreVertical size={18} color="var(--text-gray)" style={{ cursor: 'pointer' }} onClick={() => setMenuAbiertoId(menuAbiertoId === pago._id ? null : pago._id)} />
+                                            {menuAbiertoId === pago._id && (
                                                 <div style={{ position: 'absolute', right: 0, top: '25px', backgroundColor: 'white', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', borderRadius: '8px', padding: '5px', zIndex: 10, width: '150px' }}>
-                                                    <button onClick={() => eliminarPago(pago.id)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.9rem', color: '#d32f2f', width: '100%' }}>
+                                                    <button onClick={() => eliminarPago(pago._id)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.9rem', color: '#d32f2f', width: '100%' }}>
                                                         <Trash2 size={16} /> Eliminar
                                                     </button>
                                                 </div>
@@ -235,7 +238,7 @@ const Pagos = () => {
                                 <span style={{ fontWeight: 'bold', fontSize: '1.5rem', color: 'var(--primary-green)' }}>{pagoSeleccionado.monto}</span>
                             </div>
                             {pagoSeleccionado.estado === 'Pendiente' && (
-                                <button onClick={() => { cambiarEstado(pagoSeleccionado.id, 'Pagado'); setModalRecibo(false); }} className="btn-primary" style={{ width: '100%', marginTop: '20px', justifyContent: 'center' }}>
+                                <button onClick={() => { cambiarEstado(pagoSeleccionado._id, 'Pagado'); setModalRecibo(false); }} className="btn-primary" style={{ width: '100%', marginTop: '20px', justifyContent: 'center' }}>
                                     <CheckCircle size={18} /> Marcar como Pagado
                                 </button>
                             )}
@@ -271,10 +274,10 @@ const Pagos = () => {
                 </div>
             )}
 
-            {/* MODAL DE COBRO DE CAJA (EL CARRITO) */}
+            {/* MODAL DE COBRO DE CAJA (EL CARRITO MEJORADO) */}
             {modalManual && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-                    <div className="card" style={{ width: '700px', maxHeight: '90vh', overflowY: 'auto', padding: '25px', position: 'relative' }}>
+                    <div className="card" style={{ width: '750px', maxHeight: '90vh', overflowY: 'auto', padding: '25px', position: 'relative' }}>
                         <button onClick={() => setModalManual(false)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', cursor: 'pointer' }}>
                             <X size={24} color="var(--text-gray)" />
                         </button>
@@ -285,27 +288,28 @@ const Pagos = () => {
 
                         <div style={{ display: 'flex', gap: '20px' }}>
 
-                            {/* Lado Izquierdo: Buscador de Productos */}
+                            {/* Lado Izquierdo: Buscador */}
                             <div style={{ flex: 1, borderRight: '1px solid var(--border-color)', paddingRight: '20px' }}>
-                                <h3 style={{ fontSize: '1rem', marginBottom: '10px' }}>1. Agregar Artículos</h3>
+                                <h3 style={{ fontSize: '1rem', marginBottom: '10px' }}>1. Agregar Artículos / Servicios</h3>
                                 <div className="search-bar" style={{ width: '100%', marginBottom: '15px' }}>
                                     <Search size={18} color="var(--text-gray)" />
-                                    <input type="text" placeholder="Buscar producto en tienda..." value={busquedaProducto} onChange={(e) => setBusquedaProducto(e.target.value)} />
+                                    <input type="text" placeholder="Buscar producto o servicio..." value={busquedaProducto} onChange={(e) => setBusquedaProducto(e.target.value)} />
                                 </div>
 
                                 <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                                    {productosFiltrados.map(prod => (
-                                        <div key={prod.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', borderBottom: '1px solid var(--border-color)' }}>
+                                    {resultadosBusqueda.map((item) => (
+                                        <div key={item._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', borderBottom: '1px solid var(--border-color)' }}>
                                             <div>
-                                                <p style={{ fontSize: '0.9rem', fontWeight: '500' }}>{prod.nombre}</p>
-                                                <p style={{ fontSize: '0.8rem', color: 'var(--primary-green)', fontWeight: 'bold' }}>{prod.precio}</p>
+                                                <p style={{ fontSize: '0.9rem', fontWeight: '500' }}>{item.nombre}</p>
+                                                <p style={{ fontSize: '0.8rem', color: 'var(--primary-green)', fontWeight: 'bold' }}>{item.precio}</p>
+                                                <span style={{ fontSize: '0.7rem', color: 'var(--text-gray)' }}>{item.tipo}</span> {/* Indica si es Producto o Servicio */}
                                             </div>
-                                            <button type="button" onClick={() => agregarAlCarrito(prod)} style={{ border: 'none', backgroundColor: 'var(--light-green)', color: 'var(--primary-green)', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
+                                            <button type="button" onClick={() => agregarAlCarrito(item)} style={{ border: 'none', backgroundColor: 'var(--light-green)', color: 'var(--primary-green)', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
                                                 + Agregar
                                             </button>
                                         </div>
                                     ))}
-                                    {productosFiltrados.length === 0 && <p style={{ fontSize: '0.8rem', color: 'gray' }}>No hay productos que coincidan.</p>}
+                                    {resultadosBusqueda.length === 0 && <p style={{ fontSize: '0.8rem', color: 'gray' }}>No hay resultados.</p>}
                                 </div>
                             </div>
 

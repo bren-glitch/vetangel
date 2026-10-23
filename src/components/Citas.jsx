@@ -41,7 +41,7 @@ const Citas = () => {
         });
     };
 
-    // FUNCIÓN PARA CAMBIAR EL ESTADO (Completada o Cancelada)
+    // FUNCIÓN CORREGIDA PARA CAMBIAR ESTADO (usa el _id)
     const cambiarEstadoCita = (id, nuevoEstado) => {
         fetch(`/api/citas/${id}`, {
             method: 'PUT',
@@ -62,8 +62,8 @@ const Citas = () => {
     const getEstadoStyle = (estado) => {
         if (estado === 'Confirmada') return { backgroundColor: '#e8f5e9', color: '#2e7d32' };
         if (estado === 'Pendiente') return { backgroundColor: '#fff3e0', color: '#ef6c00' };
-        if (estado === 'Completada') return { backgroundColor: '#e3f2fd', color: '#1976d2' }; // Azul
-        if (estado === 'Cancelada') return { backgroundColor: '#ffebee', color: '#d32f2f' }; // Rojo
+        if (estado === 'Completada') return { backgroundColor: '#e3f2fd', color: '#1976d2' };
+        if (estado === 'Cancelada') return { backgroundColor: '#ffebee', color: '#d32f2f' };
         return { backgroundColor: '#eeeeee', color: '#616161' };
     };
 
@@ -109,9 +109,8 @@ const Citas = () => {
                     <tbody>
                         {citas.map((cita) => {
                             const deuda = getDeuda(cita.mascota);
-
                             return (
-                                <tr key={cita.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                <tr key={cita._id} style={{ borderBottom: '1px solid var(--border-color)' }}> {/* <-- _id */}
                                     <td style={{ padding: '15px' }}>
                                         <div style={{ fontWeight: '500' }}>{cita.fecha}</div>
                                         <div style={{ fontSize: '0.85rem', color: 'var(--text-gray)' }}>{cita.hora}</div>
@@ -132,33 +131,22 @@ const Citas = () => {
                                     </td>
                                     <td style={{ padding: '15px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-
-                                            {/* BOTONES DE ACCIÓN RÁPIDA (Solo si está pendiente o confirmada) */}
                                             {(cita.estado === 'Pendiente' || cita.estado === 'Confirmada') && (
                                                 <>
-                                                    <button
-                                                        onClick={() => cambiarEstadoCita(cita.id, 'Completada')}
-                                                        style={{ border: 'none', backgroundColor: '#e3f2fd', color: '#1976d2', padding: '5px', borderRadius: '5px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                                                        title="El paciente asistió y fue atendido"
-                                                    >
+                                                    {/* BOTONES CON _id */}
+                                                    <button onClick={() => cambiarEstadoCita(cita._id, 'Completada')} style={{ border: 'none', backgroundColor: '#e3f2fd', color: '#1976d2', padding: '5px', borderRadius: '5px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Completar">
                                                         <CheckCircle size={16} />
                                                     </button>
-
-                                                    <button
-                                                        onClick={() => cambiarEstadoCita(cita.id, 'Cancelada')}
-                                                        style={{ border: 'none', backgroundColor: '#ffebee', color: '#d32f2f', padding: '5px', borderRadius: '5px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                                                        title="El paciente no asistió o canceló"
-                                                    >
+                                                    <button onClick={() => cambiarEstadoCita(cita._id, 'Cancelada')} style={{ border: 'none', backgroundColor: '#ffebee', color: '#d32f2f', padding: '5px', borderRadius: '5px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Cancelar">
                                                         <XCircle size={16} />
                                                     </button>
                                                 </>
                                             )}
-
                                             <div style={{ position: 'relative' }}>
-                                                <MoreVertical size={18} color="var(--text-gray)" style={{ cursor: 'pointer' }} onClick={() => setMenuAbiertoId(menuAbiertoId === cita.id ? null : cita.id)} />
-                                                {menuAbiertoId === cita.id && (
+                                                <MoreVertical size={18} color="var(--text-gray)" style={{ cursor: 'pointer' }} onClick={() => setMenuAbiertoId(menuAbiertoId === cita._id ? null : cita._id)} />
+                                                {menuAbiertoId === cita._id && (
                                                     <div style={{ position: 'absolute', right: 0, top: '25px', backgroundColor: 'white', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', borderRadius: '8px', padding: '5px', zIndex: 10 }}>
-                                                        <button onClick={() => eliminarCita(cita.id)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', border: 'none', background: 'none', cursor: 'pointer', color: '#d32f2f' }}>
+                                                        <button onClick={() => eliminarCita(cita._id)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', border: 'none', background: 'none', cursor: 'pointer', color: '#d32f2f' }}>
                                                             <Trash2 size={16} /> Eliminar
                                                         </button>
                                                     </div>
@@ -179,9 +167,7 @@ const Citas = () => {
                         <button onClick={() => setModalAbierto(false)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', cursor: 'pointer' }}>
                             <X size={24} color="var(--text-gray)" />
                         </button>
-
                         <h2 style={{ marginBottom: '20px', color: 'var(--primary-green)' }}>Agendar Nueva Cita</h2>
-
                         <form onSubmit={guardarCita} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <div>
                                 <label style={{ fontSize: '0.9rem', fontWeight: '500' }}>Fecha</label>
@@ -206,7 +192,6 @@ const Citas = () => {
                                     <option value="Confirmada">Confirmada</option>
                                 </select>
                             </div>
-
                             <button type="submit" className="btn-primary" style={{ marginTop: '10px', justifyContent: 'center' }}>
                                 Agendar Cita
                             </button>
